@@ -10,3 +10,24 @@ Implementation of X3D for violence detection
     4.Since gcc8 and NCCL are already installed on the cluster, run this command:
 
 HOROVOD_WITH_GLOO=1 HOROVOD_WITH_MPI=1 HOROVOD_WITH_PYTORCH=1 HOROVOD_WITHOUT_TENSORFLOW=1 HOROVOD_WITHOUT_MXNET=1 HOROVOD_CMAKE={Path to python virtual environment}/bin/cmake HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_NCCL_HOME=/cm/shared/apps/nccl2-cuda10.2-gcc/2.7.8 pip install --no-cache-dir horovod[pytorch]
+
+To check if horovod is installed with NCCL correctly, use:
+    horovodrun --check-build
+
+if it is installed correctly, the information should be shown as below:
+
+Available Frameworks:
+    [ ] TensorFlow
+    [X] PyTorch
+    [ ] MXNet
+
+Available Controllers:
+    [X] MPI
+    [X] Gloo
+
+Available Tensor Operations:
+    [X] NCCL
+    [ ] DDL
+    [ ] CCL
+    [X] MPI
+    [X] Gloo 
