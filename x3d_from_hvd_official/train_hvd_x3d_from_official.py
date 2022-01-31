@@ -122,128 +122,129 @@ def test(model, test_loader, test_sampler):
     model.eval()
     test_loss = 0.
     test_accuracy = 0.
-    for data, target, _ in test_loader:
-        if args.cuda:
-            data, target = data.cuda(), target.cuda()
-        output = model(data)
-        # sum up batch loss
-        # criterion = nn.CrossEntropyLoss(reduction='sum').cuda()
-        criterion = nn.CrossEntropyLoss().cuda()
-        test_loss += criterion(output, target)
-        # get the index of the max log-probability
-        pred = output.data.max(1, keepdim=True)[1]
-        test_accuracy += pred.eq(target.data.view_as(pred)).cpu().float().sum()
-
-    # Horovod: use test_sampler to determine the number of examples in
-    # this worker's partition.
-    test_loss /= len(test_sampler)
-    test_accuracy /= len(test_sampler)
-
-    # Horovod: average metric values across workers.
-    test_loss = metric_average(test_loss, 'avg_loss')
-    test_accuracy = metric_average(test_accuracy, 'avg_accuracy')
-
-    # Horovod: print output only on first rank.
-    if hvd.rank() == 0:
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n'.format(
-            test_loss, 100. * test_accuracy))
+    with torch.no_grad():
+        for data, target, _ in test_loader:
+            if args.cuda:
+                data, target = data.cuda(), target.cuda()
+            output = model(data)
+            # sum up batch loss
+            # criterion = nn.CrossEntropyLoss(reduction='sum').cuda()
+            criterion = nn.CrossEntropyLoss().cuda()
+            test_loss += criterion(output, target)
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            test_accuracy += pred.eq(target.data.view_as(pred)).cpu().float().sum()
+    
+        # Horovod: use test_sampler to determine the number of examples in
+        # this worker's partition.
+        test_loss /= len(test_sampler)
+        test_accuracy /= len(test_sampler)
+    
+        # Horovod: average metric values across workers.
+        test_loss = metric_average(test_loss, 'avg_loss')
+        test_accuracy = metric_average(test_accuracy, 'avg_accuracy')
+    
+        # Horovod: print output only on first rank.
+        if hvd.rank() == 0:
+            print('\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n'.format(
+                test_loss, 100. * test_accuracy))
         
         
         
 # %%     
-def correct(output, target, topk=(1,), fnames = None):
-    """Computes the precision@k for the specified values of k"""
-    maxk = max(topk)
+# def correct(output, target, topk=(1,), fnames = None):
+#     """Computes the precision@k for the specified values of k"""
+#     maxk = max(topk)
 
-    # For mini-batches with multiple output predictions
-    if len(list(output.size())) > 1:
-        # Return the indices of where the maxk largest probabilities are (sorted
-        # with the highest probabilities first), then transpose
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
+#     # For mini-batches with multiple output predictions
+#     if len(list(output.size())) > 1:
+#         # Return the indices of where the maxk largest probabilities are (sorted
+#         # with the highest probabilities first), then transpose
+#         _, pred = output.topk(maxk, 1, True, True)
+#         pred = pred.t()
         
-        # Return a boolean tensor describing element-wise equality 
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-    # For mini-batches that only have one output
-    else:
-        pred = torch.argmax(output)
+#         # Return a boolean tensor describing element-wise equality 
+#         correct = pred.eq(target.view(1, -1).expand_as(pred))
+#     # For mini-batches that only have one output
+#     else:
+#         pred = torch.argmax(output)
         
-        # Return a boolean tensor describing element-wise equality
-        correct = pred.eq(target)
+#         # Return a boolean tensor describing element-wise equality
+#         correct = pred.eq(target)
     
-    # print(correct)
-    # correct: tensor([[ True, False, False,  True, False, False,  True, False, False, False,
-    # False, False, False,  True,  True,  True]], device='cuda:0')
-    # ???
+#     # print(correct)
+#     # correct: tensor([[ True, False, False,  True, False, False,  True, False, False, False,
+#     # False, False, False,  True,  True,  True]], device='cuda:0')
+#     # ???
     
-    # # Report misclassifications if the filenames were passed (validation in
-    # # the last epoch)
-    if fnames is not None:
+#     # # Report misclassifications if the filenames were passed (validation in
+#     # # the last epoch)
+#     if fnames is not None:
         
-        # Print out the file name of each misclassified clip
-        if True:
-            if not correct:
-                # Split the path using the OS path separator, only use the last
-                # two divisions for simplicity
-                segs = fnames.split(os.path.sep)
-                print(os.path.join(segs[-2],segs[-1]) + ' was misclassified.')
+#         # Print out the file name of each misclassified clip
+#         if True:
+#             if not correct:
+#                 # Split the path using the OS path separator, only use the last
+#                 # two divisions for simplicity
+#                 segs = fnames.split(os.path.sep)
+#                 print(os.path.join(segs[-2],segs[-1]) + ' was misclassified.')
                 
-    res = []
-    for k in topk:
-        # Added to make correct contiguous in memory (view() only works on
-        # contiguous arrays)
-        correct = correct.contiguous()
-        # Slice the first k elements of correct and add them up.
-        correct_k = correct[:k].view(-1).float().sum(0)
-        # Store in list to return
-        res.append(correct_k)
-    return res
+#     res = []
+#     for k in topk:
+#         # Added to make correct contiguous in memory (view() only works on
+#         # contiguous arrays)
+#         correct = correct.contiguous()
+#         # Slice the first k elements of correct and add them up.
+#         correct_k = correct[:k].view(-1).float().sum(0)
+#         # Store in list to return
+#         res.append(correct_k)
+#     return res
         
 
 
-# Begin test function --------------------------------------------------------
-def validation(model, val_dataloader, val_sampler, epoch, criterion, hightest_val_acc):
+# # Begin test function --------------------------------------------------------
+# def validation(model, val_dataloader, val_sampler, epoch, criterion, hightest_val_acc):
 
-    # Set model to eval mode
-    model.eval()
+#     # Set model to eval mode
+#     model.eval()
     
-    top1 = 0.0
+#     top1 = 0.0
     
-    # Stop updating gradients, since this is testing
-    with torch.no_grad():
+#     # Stop updating gradients, since this is testing
+#     with torch.no_grad():
         
-        for batch_idx, (inputs, labels, fnames) in enumerate(val_dataloader):
+#         for batch_idx, (inputs, labels, fnames) in enumerate(val_dataloader):
             
-            # Move inputs/labels to GPU
-            inputs = inputs.cuda()
-            labels = labels.cuda()
+#             # Move inputs/labels to GPU
+#             inputs = inputs.cuda()
+#             labels = labels.cuda()
             
-            # Get the original outputs of the model
-            outputs = model(inputs)
+#             # Get the original outputs of the model
+#             outputs = model(inputs)
             
-            # Only pass the filenames (for explaining misclassification) on the
-            # final epoch
-            # if epoch < NUM_EPOCH-1:
-            fnames = None
+#             # Only pass the filenames (for explaining misclassification) on the
+#             # final epoch
+#             # if epoch < NUM_EPOCH-1:
+#             fnames = None
             
-            corr1 = correct(outputs.data, labels, (1,), fnames)[0]
+#             corr1 = correct(outputs.data, labels, (1,), fnames)[0]
             
-            # Sum correct predictions from this worker across batches
-            top1 += corr1
+#             # Sum correct predictions from this worker across batches
+#             top1 += corr1
                 
-        # After all batches for this worker, calculate total accuracy --------
+#         # After all batches for this worker, calculate total accuracy --------
     
-        # Sum metric values across workers
-        # top1 = metric_sum(top1, 'sum_top1')
-        top1 = metric_average(top1, 'avg_accuracy')
+#         # Sum metric values across workers
+#         # top1 = metric_sum(top1, 'sum_top1')
+#         top1 = metric_average(top1, 'avg_accuracy')
             
-        # Convert to per-sample values
-        top1 = (top1*100)/(len(val_sampler) * hvd.size())
+#         # Convert to per-sample values
+#         top1 = (top1*100)/(len(val_sampler) * hvd.size())
         
-        if top1 > hightest_val_acc:
-            hightest_val_acc = top1
+#         if top1 > hightest_val_acc:
+#             hightest_val_acc = top1
     
-    return top1, hightest_val_acc
+#     return top1, hightest_val_acc
         
 # %%
 def stage_freeze(which_stage, model): #['none', 'up2conv1', 'up2res2', 'up2res3', 'up2res4', 'up2res5']
@@ -298,7 +299,7 @@ def stage_freeze(which_stage, model): #['none', 'up2conv1', 'up2res2', 'up2res3'
 def main(args):
     # Horovod: initialize library.
     hvd.init()
-    torch.manual_seed(args.seed)
+    # torch.manual_seed(args.seed)
 
     if args.cuda:
         # Horovod: pin GPU to local rank.
@@ -469,8 +470,8 @@ if __name__ == '__main__':
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
     
-    parser.add_argument('--seed', type=int, default=42, metavar='S',
-                        help='random seed (default: 42)')
+    # parser.add_argument('--seed', type=int, default=42, metavar='S',
+    #                     help='random seed (default: 42)')
     
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
