@@ -304,7 +304,7 @@ def main(args):
     if args.cuda:
         # Horovod: pin GPU to local rank.
         torch.cuda.set_device(hvd.local_rank())
-        torch.cuda.manual_seed(args.seed)
+        # torch.cuda.manual_seed(args.seed)
     else:
         if args.use_mixed_precision:
             raise ValueError("Mixed precision is only supported with cuda enabled.")
@@ -413,6 +413,8 @@ def main(args):
     if args.optimizer == 'adam':
         # optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
         optimizer = optim.Adam(model.parameters(), lr=args.lr * lr_scaler,)
+        
+    print('optimizer used:' + args.optimizer)
 
 
     # Horovod: broadcast parameters & optimizer state.
@@ -452,16 +454,16 @@ if __name__ == '__main__':
     # Training settings
     parser = argparse.ArgumentParser(description='Training X3D, modified from official PyTorch MNIST Example')
     
-    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=32, metavar='N',
                         help='input batch size for training (default: 16)')
     
-    parser.add_argument('--epochs', type=int, default=2, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
     
-    parser.add_argument('--optimizer', default='sgd', 
+    parser.add_argument('--optimizer', default='adam', 
                         help='what optimizer to use')
     
-    parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
+    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                         help='learning rate (default: 0.1)')
     
     parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
