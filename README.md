@@ -12,7 +12,7 @@ Implementation of X3D for violence detection
 
 
 
- To install Horovod with NCCL support on the cluster:
+# To install Horovod with NCCL support on the cluster:
 
 1.Activate the python virtual environment
 
