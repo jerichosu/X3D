@@ -1,7 +1,6 @@
 # Human Abnormal Behaviors Detection Using X3D
 
-Implementation of X3D for violence detection
-
+## Some detection results on CCTV_FIGHTS and RWF-2000 test sets 
 <table style="border:0px">
    <tr>
        <td><img src="x3d_from_hvd_official/assets/video01.gif" frame=void rules=none></td>
