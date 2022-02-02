@@ -77,9 +77,9 @@ labels = {0: 'Fight', 1: 'NonFight'}
 
 
 # dir = '../../../../DATASETS/Surv/fight'
-dir = '../../../../DATASETS/CCTV_Fights/MPEG_Compressed/mpeg-001-100'
+# dir = '../../../../DATASETS/CCTV_Fights/MPEG_Compressed/mpeg-501-600'
 # dir = '../../../../DATASETS/CCTV_Fights/MPEG_Compressed/mpeg-301-400' # 1/2/3 8 bad/6/7/12
-# dir = '../../../../SLOWFAST/RWF-2000/test/Fight'
+dir = '../../../../SLOWFAST/RWF-2000/test/NonFight'
 
 
 # dir = 'SLOWFAST/RWF-2000/test/NonFight'
@@ -87,7 +87,7 @@ dir = '../../../../DATASETS/CCTV_Fights/MPEG_Compressed/mpeg-001-100'
 # dir = 'SLOWFAST/RWF-2000/train/Fight'
 clips = os.listdir(dir)
 
-path = os.path.join(dir,os.listdir(dir)[25])
+path = os.path.join(dir,os.listdir(dir)[85])
 
 
 # path = 'SLOWFAST/RWF-2000/test/NonFight/2lrARl7utL4_2.avi'
@@ -162,11 +162,11 @@ while retaining:
 
         cv2.putText(frame, labels[int(predicted_labels)], (5, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.5,
-                    (0, 0, 255), 1)
+                    (0, 0, 255), thickness=2)
         
         cv2.putText(frame, "Prob_fight: %.4f" % probs_fight, (5, 100),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                    (0, 0, 255), 1)
+                    (0, 0, 255), thickness=2)
         # print(len(clip))
         clip.pop(0)
         # print(len(clip))
@@ -176,12 +176,16 @@ while retaining:
     
     # make sure don't make gif too big
     kk += 1
-    # print(kk)
-    if kk > 280 and kk < 600:
-        print(kk)
-        image_list.append(frame)
+    print(kk)
+    # if kk > 500 and kk < 800:
+    #     print(kk)
+    # frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # image_list.append(frame_rgb)
+        
+    # if kk > 800:
+    #     break
     
-    if cv2.waitKey(30) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
     # cv2.waitKey(30)
 
@@ -189,7 +193,7 @@ cap.release()
 cv2.destroyAllWindows()
 
 # # Convert to gif using the imageio.mimsave method
-imageio.mimsave('./video.gif', image_list, fps=25)
+# imageio.mimsave('../demo/raw/video08_nonef.gif', image_list, fps=25)
     
     
 
