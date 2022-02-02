@@ -8,8 +8,8 @@ Implementation of X3D for violence detection
        <td><img src="x3d_from_hvd_official/assets/video02.gif" frame=void rules=none></td>
    </tr>
    <tr>
-      <td><div aligh=center><img width = "640" height = "280" src="x3d_from_hvd_official/assets/video03.gif" frame=void rules=none></td>
-      <td><div aligh=center><img width = "640" height = "280" src="x3d_from_hvd_official/assets/video04.gif" frame=void rules=none></td>
+      <td><div aligh=center><img width = "640" height = "180" src="x3d_from_hvd_official/assets/video03.gif" frame=void rules=none></td>
+      <td><div aligh=center><img width = "640" height = "180" src="x3d_from_hvd_official/assets/video04.gif" frame=void rules=none></td>
    </tr>
 </table>
 
